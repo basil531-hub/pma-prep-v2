@@ -1,0 +1,5 @@
+"use server";
+import { createClient } from "@/lib/supabase/server";
+import { ensureUserProfile } from "@/lib/ensure-user-profile";
+import { recordPracticeAttempt } from "@/app/dashboard/actions";
+export async function savePersonalityAssessment(answers:Record<string,string>){const s=await createClient();const{data:{user}}=await s.auth.getUser();if(!user)throw new Error("Sign in required.");const ids=Object.keys(answers).filter(Boolean).slice(0,150);if(!ids.length)throw new Error("Complete the questionnaire before submitting.");const{data:tests,error}=await s.from("tests").select("id").eq("type","Personality").in("id",ids);if(error||!tests?.length)throw new Error("The questionnaire is no longer available.");const admin=await ensureUserProfile(user);const feedback=`ISSB OPI test completed: ${tests.length} statements answered.`;const{error:saveError}=await admin.from("results").insert(tests.map(test=>({user_id:user.id,test_id:test.id,score:0,feedback})));if(saveError)throw new Error("We could not save your assessment. Please try again.");await recordPracticeAttempt("ISSB OPI Test",0)}

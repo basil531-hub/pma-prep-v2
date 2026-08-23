@@ -1,0 +1,4 @@
+import { getPublicPosts } from "@/lib/blog-data";
+export const dynamic="force-dynamic";
+const esc=(v:string)=>v.replace(/[<>&'\"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;","'":"&apos;",'"':"&quot;"}[c]!));
+export async function GET(){const site=(process.env.NEXT_PUBLIC_SITE_URL||"https://pmaprep.pk").replace(/\/$/,"");const posts=await getPublicPosts();const items=posts.map(p=>`<item><title>${esc(p.title)}</title><link>${site}/blog/${p.slug}</link><guid>${site}/blog/${p.slug}</guid><description>${esc(p.excerpt)}</description><pubDate>${new Date(p.published_at||p.updated_at||Date.now()).toUTCString()}</pubDate></item>`).join("");return new Response(`<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>PMA Prep Blog</title><link>${site}/blog</link><description>PMA Initial and ISSB preparation guides</description>${items}</channel></rss>`,{headers:{"content-type":"application/rss+xml; charset=utf-8"}})}

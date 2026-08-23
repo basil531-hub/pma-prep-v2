@@ -1,0 +1,4 @@
+import Link from "next/link";
+import { CheckCircle2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+export default async function MechanicalResult({ searchParams }: { searchParams: Promise<{ score?: string; total?: string; percentage?: string }> }) { const params = await searchParams; return <main className="mx-auto max-w-xl px-5 py-16"><Card><CardContent className="p-8 text-center"><CheckCircle2 className="mx-auto h-12 w-12 text-primary" /><p className="mt-5 text-sm font-bold uppercase tracking-wider text-primary">Mechanical Aptitude Result</p><h1 className="mt-2 text-5xl font-black">{params.percentage || 0}%</h1><p className="mt-3 text-slate-500">{params.score || 0} of {params.total || 0} correct</p><Link className="mt-8 inline-flex rounded-xl bg-primary px-5 py-3 font-semibold text-white" href="/psychology">Back to psychology tests</Link></CardContent></Card></main>; }

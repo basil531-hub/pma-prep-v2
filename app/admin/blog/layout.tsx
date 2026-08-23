@@ -1,0 +1,6 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { isAdminEmail } from "@/lib/admin";
+const links=[["Posts","/admin/blog"],["Add new","/admin/blog/new"],["Media","/admin/blog/media"],["Calendar","/admin/blog/calendar"],["Bulk","/admin/blog/bulk"],["SEO","/admin/blog/seo"],["Comments","/admin/blog/comments"],["Analytics","/admin/blog/analytics"],["Growth","/admin/blog/growth"]];
+export default async function BlogAdminLayout({children}:{children:React.ReactNode}){const s=await createClient();const {data:{user}}=await s.auth.getUser();if(!user)redirect("/login");const {data:p}=await s.from("users").select("role").eq("id",user.id).single();if(p?.role!=="admin"&&!isAdminEmail(user.email))redirect("/dashboard");return <main className="min-h-screen bg-slate-50 px-5 py-8"><div className="mx-auto max-w-7xl"><nav className="mb-7 flex flex-wrap items-center gap-1 text-sm font-bold"><Link href="/admin" className="mr-3 text-slate-500">← Admin</Link>{links.map(([label,href])=><Link key={href} href={href} className="rounded-lg px-3 py-2 hover:bg-white">{label}</Link>)}<Link href="/blog" target="_blank" className="ml-auto text-primary">View blog ↗</Link></nav>{children}</div></main>}

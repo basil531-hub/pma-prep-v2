@@ -1,0 +1,3 @@
+"use client";
+import { useEffect } from "react";
+export function DesktopDropdownCloser(){useEffect(()=>{const closeOutside=(event:PointerEvent)=>{const target=event.target as Element|null;document.querySelectorAll<HTMLDetailsElement>("header details[open]").forEach(menu=>{if(!menu.contains(target))menu.open=false;});};const closeEscape=(event:KeyboardEvent)=>{if(event.key==="Escape")document.querySelectorAll<HTMLDetailsElement>("header details[open]").forEach(menu=>menu.open=false);};document.addEventListener("pointerdown",closeOutside);document.addEventListener("keydown",closeEscape);return()=>{document.removeEventListener("pointerdown",closeOutside);document.removeEventListener("keydown",closeEscape);};},[]);return null;}

@@ -1,0 +1,20 @@
+import Link from "next/link";
+import { ArrowLeft, Brain, Clock3, ListChecks, Target } from "lucide-react";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+const descriptions = {
+  Academic: { title: "Academic MCQs", detail: "English, Maths, General Knowledge, Islamic Studies, Current Affairs, Pak Studies and General Science.", icon: Target },
+  Verbal: { title: "Verbal Intelligence", detail: "Word analogies, number series and logic puzzles that test relationships and reasoning.", icon: Brain },
+  "Non-Verbal": { title: "Non-Verbal Intelligence", detail: "Pattern recognition, sequences and diagram-based multiple-choice questions.", icon: ListChecks },
+} as const;
+
+export default async function InitialMcqsPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const { data: tests } = await supabase.from("initial_tests").select("id,type,total_questions,time_limit,passing_marks").order("type");
+  return <main className="mx-auto max-w-6xl px-5 py-10"><Link className="inline-flex items-center gap-2 text-sm font-semibold text-primary" href="/initial"><ArrowLeft className="h-4 w-4" />Initial preparation</Link><section className="mt-7 max-w-3xl"><p className="text-sm font-bold uppercase tracking-wider text-primary">PMA Initial Course</p><h1 className="mt-2 text-4xl font-black">Choose your test</h1><p className="mt-3 text-lg leading-8 text-slate-600">Three focused modules measure academic readiness and intelligence under a strict timer. Choose one test, answer at your own pace, and review your result afterward.</p></section><div className="mt-10 grid gap-5 lg:grid-cols-3">{(["Academic", "Verbal", "Non-Verbal"] as const).map((type) => { const test = tests?.find((item) => item.type === type); const { title, detail, icon: Icon } = descriptions[type]; const slug = type.toLowerCase().replace("-", "-"); return <Card key={type}><CardContent className="flex h-full flex-col pt-6"><div className="grid h-12 w-12 place-items-center rounded-xl bg-green-50 text-primary"><Icon /></div><h2 className="mt-5 text-2xl font-black">{title}</h2><p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{detail}</p><div className="mt-6 grid grid-cols-3 gap-2 text-center text-xs"><div className="rounded-lg bg-slate-50 p-3"><strong className="block text-lg text-slate-950">{test?.total_questions || (type === "Academic" ? 50 : type === "Verbal" ? 84 : 64)}</strong>Questions</div><div className="rounded-lg bg-slate-50 p-3"><strong className="block text-lg text-slate-950">{test ? Math.round(test.time_limit / 60) : type === "Verbal" ? 30 : 25}</strong>Minutes</div><div className="rounded-lg bg-slate-50 p-3"><strong className="block text-lg text-slate-950">{test?.passing_marks || 50}%</strong>Pass</div></div><Button asChild className="mt-5 w-full" disabled={!test}><Link href={test ? `/initial/mcqs/${slug}` : "#"}>{test ? "Start test" : "Not available"}</Link></Button></CardContent></Card>; })}</div><div className="mt-8 flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-950"><Clock3 className="h-5 w-5 shrink-0" />Timers cannot be paused. Your result records score, percentage, pass/fail, and time taken.</div></main>;
+}

@@ -1,0 +1,8 @@
+"use client";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { saveInitialResult } from "@/app/initial/mcqs/actions";
+import { McqExamShell } from "@/components/mcq-exam-shell";
+type Question={id:string;question_text:string;options:string[];image_url?:string|null};
+type Test={id:string;type:"Academic"|"Verbal"|"Non-Verbal";total_questions:number;time_limit:number;passing_marks:number};
+export function InitialCourseTest({test,questions}:{test:Test;questions:Question[]}){const [pending,startTransition]=useTransition();const [error,setError]=useState("");const router=useRouter();function submit(answers:Record<string,string>,elapsed:number){if(pending)return;const form=new FormData();form.set("test_id",test.id);form.set("question_ids",JSON.stringify(questions.map(question=>question.id)));form.set("answers",JSON.stringify(Object.entries(answers).map(([questionId,answer])=>({questionId,answer}))));form.set("time_taken",String(elapsed));startTransition(async()=>{try{const id=await saveInitialResult(form);router.push(`/initial/mcqs/results/${id}`)}catch(e){setError(e instanceof Error?e.message:"Unable to save your result.")}})}return <div className="space-y-4">{error&&<p className="rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700">{error}</p>}<McqExamShell title={`${test.type} Test`} eyebrow="PMA Initial e-test · 25 credits per completed attempt" questions={questions.map(q=>({id:q.id,text:q.question_text,imageUrl:q.image_url,options:q.options}))} duration={test.time_limit} passMark={test.passing_marks} submitting={pending} onSubmit={submit}/></div>}

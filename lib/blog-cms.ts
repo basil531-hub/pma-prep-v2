@@ -1,0 +1,9 @@
+import { blogPosts, type BlogPost } from "@/lib/blog-posts";
+
+export type ContentBlock = { id: string; type: "heading"|"paragraph"|"list"|"quote"|"callout"|"cta"; text: string; items?: string[]; url?: string };
+export type CmsPost = { id?: string; slug: string; title: string; excerpt: string; content_json: ContentBlock[]; rich_content_json?: import("@/lib/rich-content").RichNode|null; content_format?: "blocks"|"rich"; category?: { name: string } | null; status?: string; published_at?: string | null; updated_at?: string; seo_title?: string; seo_description?: string; canonical_url?: string; allow_indexing?: boolean; comments_enabled?: boolean; related_post_ids?: string[]; featured_image?: { file_path: string; alt_text: string; public_url?:string } | null };
+export function slugify(value: string) { return value.toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,100); }
+export function staticBlocks(post: BlogPost): ContentBlock[] { return post.sections.flatMap((s,i) => [{ id:`h${i}`,type:"heading" as const,text:s.heading },...s.paragraphs.map((text,j)=>({id:`p${i}-${j}`,type:"paragraph" as const,text})),...(s.bullets?.length?[{id:`l${i}`,type:"list" as const,text:"",items:s.bullets}]:[])]); }
+export function staticAsCms(post: BlogPost): CmsPost { return { slug:post.slug,title:post.title,excerpt:post.description,content_json:staticBlocks(post),category:{name:post.category},updated_at:"2026-08-21T00:00:00Z" }; }
+export function safeBlocks(value: unknown): ContentBlock[] { if(!Array.isArray(value)) return []; return value.filter((x):x is ContentBlock=>Boolean(x&&typeof x==="object"&&typeof (x as ContentBlock).text==="string"&&["heading","paragraph","list","quote","callout","cta"].includes((x as ContentBlock).type))).slice(0,200); }
+export const staticCmsPosts = blogPosts.map(staticAsCms);

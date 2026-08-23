@@ -1,0 +1,7 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { MechanicalTest } from "@/components/mechanical-test";
+export default async function MechanicalPage() { const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) redirect("/login"); const admin = createAdminClient(); const { data: questions } = await admin.from("mechanical_mcqs").select("id,image_url,options").order("created_at"); const signedImages: Record<string,string> = {}; for (const question of questions || []) { const result = await admin.storage.from("mechanical-mcqs").createSignedUrl(question.image_url, 3600); if (result.data?.signedUrl) signedImages[question.id] = result.data.signedUrl; } return <main className="mx-auto max-w-4xl px-5 py-10"><Link className="inline-flex items-center gap-2 text-sm font-semibold text-primary" href="/psychology"><ArrowLeft className="h-4 w-4" />Psychology tests</Link><div className="mt-7"><p className="text-sm font-bold uppercase tracking-wider text-primary">ISSB Psychology</p><h1 className="mt-1 text-3xl font-black">Mechanical Aptitude Test</h1><p className="mt-2 text-slate-500">25 minutes · image-based mechanical reasoning practice.</p></div><div className="mt-8"><MechanicalTest questions={questions || []} signedImages={signedImages} /></div></main>; }

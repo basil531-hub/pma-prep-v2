@@ -1,0 +1,5 @@
+"use client";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { ArticleExperience } from "@/components/article-experience";
+export function ReadingProgress({title}:{title?:string}){const[value,setValue]=useState(0),[resolvedTitle,setResolvedTitle]=useState(title||"PMA Prep preparation guide");const pathname=usePathname();useEffect(()=>{if(!title){const heading=document.querySelector("article h1")?.textContent?.trim();if(heading)setResolvedTitle(heading)}const shareButton=document.querySelector<HTMLButtonElement>('[title="Share article"]');if(shareButton&&!pathname.startsWith("/blog/"))shareButton.hidden=true;const update=()=>{const max=document.documentElement.scrollHeight-innerHeight;setValue(max>0?Math.min(100,scrollY/max*100):0)};update();addEventListener("scroll",update,{passive:true});return()=>{removeEventListener("scroll",update);if(shareButton)shareButton.hidden=false}},[title,pathname]);return <><div className="fixed left-0 top-0 z-[60] h-1 bg-emerald-500 transition-[width]" style={{width:`${value}%`}} aria-hidden/><ArticleExperience slug={pathname} title={resolvedTitle}/></>}

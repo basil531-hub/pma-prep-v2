@@ -1,0 +1,3 @@
+import { AuthForm } from "@/components/auth-form";
+import { signup } from "../auth/actions";
+export default async function Signup({ searchParams }: { searchParams: Promise<{ error?: string; plan?: string; next?: string; ref?: string }> }) { const p = await searchParams; const next = p.next || (p.plan && ["initial", "issb", "complete"].includes(p.plan) ? `/upgrade?plan=${p.plan}` : undefined); const ref = (p.ref || "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 12).toUpperCase(); return <main className="grid min-h-[calc(100vh-4rem)] place-items-center px-5 py-12"><AuthForm mode="signup" action={signup} error={p.error} next={next} referralCode={ref} /></main>; }

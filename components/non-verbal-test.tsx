@@ -1,0 +1,6 @@
+"use client";
+import { useState } from "react";
+import { saveNonVerbalResults } from "@/app/initial/mcqs/non-verbal-actions";
+import { McqExamShell } from "@/components/mcq-exam-shell";
+type Question={id:string;image_url:string;options:unknown};
+export function NonVerbalTest({questions,signedImages}:{questions:Question[];signedImages:Record<string,string>}){const [submitting,setSubmitting]=useState(false);const[error,setError]=useState("");async function submit(answers:Record<string,string>,elapsed:number){if(submitting)return;setSubmitting(true);setError("");const form=new FormData();form.set("answers",JSON.stringify(Object.entries(answers).map(([mcqId,selectedOption])=>({mcqId,selectedOption}))));form.set("time_taken",String(elapsed));try{await saveNonVerbalResults(form)}catch(e){setError(e instanceof Error?e.message:"Unable to save this attempt.");setSubmitting(false)}}return <div className="space-y-4">{error&&<p className="rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700">{error}</p>}<McqExamShell title="Non-Verbal Intelligence" eyebrow="PMA Initial e-test · 25 credits per completed attempt" questions={questions.map(q=>({id:q.id,imageUrl:signedImages[q.id],options:Array.isArray(q.options)?q.options.map(String):[]}))} duration={1500} passMark={50} submitting={submitting} onSubmit={submit}/></div>}

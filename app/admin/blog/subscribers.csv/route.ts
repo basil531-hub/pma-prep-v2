@@ -1,0 +1,4 @@
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { isAdminEmail } from "@/lib/admin";
+export async function GET(){const s=await createClient();const {data:{user}}=await s.auth.getUser();if(!user)return new Response("Unauthorized",{status:401});const {data:p}=await s.from("users").select("role").eq("id",user.id).single();if(p?.role!=="admin"&&!isAdminEmail(user.email))return new Response("Forbidden",{status:403});const {data}=await createAdminClient().from("blog_subscribers").select("email,name,source,status,consent_at").order("created_at");const quote=(v:unknown)=>`"${String(v??"").replaceAll('"','""')}"`;const csv=["email,name,source,status,consent_at",...(data||[]).map(x=>[x.email,x.name,x.source,x.status,x.consent_at].map(quote).join(","))].join("\n");return new Response(csv,{headers:{"content-type":"text/csv; charset=utf-8","content-disposition":"attachment; filename=blog-subscribers.csv"}})}

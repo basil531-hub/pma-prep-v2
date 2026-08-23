@@ -1,0 +1,11 @@
+import Link from "next/link";
+import { ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { LocalProgressRecorder } from "@/components/local-progress-recorder";
+
+export default async function NonVerbalResultPage({ searchParams }: { searchParams: Promise<{ score?: string; total?: string; percentage?: string; time?: string }> }) {
+  const params = await searchParams; const score = Number(params.score) || 0; const total = Number(params.total) || 0; const percentage = Number(params.percentage) || 0; const time = Number(params.time) || 0; const passed = percentage >= 50; const minutes = Math.floor(time / 60); const seconds = String(time % 60).padStart(2, "0");
+  return <main className="mx-auto max-w-3xl px-5 py-10"><LocalProgressRecorder score={score} total={total} percentage={percentage} passed={passed} /><Link className="inline-flex items-center gap-2 text-sm font-semibold text-primary" href="/initial/mcqs"><ArrowLeft className="h-4 w-4" />All Initial tests</Link><Card className="mt-8 overflow-hidden"><div className={`p-8 text-white ${passed ? "bg-green-900" : "bg-slate-900"}`}><p className="text-sm font-bold uppercase tracking-wider text-green-200">Non-Verbal Intelligence result</p><h1 className="mt-2 text-4xl font-black">{passed ? "Test passed" : "Keep practising"}</h1><p className="mt-2 text-slate-300">Passing mark: 50%</p></div><CardContent className="grid gap-4 pt-6 sm:grid-cols-3"><Metric label="Score" value={`${score} / ${total}`} /><Metric label="Percentage" value={`${percentage}%`} /><Metric label="Time taken" value={`${minutes}:${seconds}`} /><div className="flex items-center gap-2 rounded-xl bg-slate-50 p-4 text-sm font-semibold sm:col-span-3">{passed ? <CheckCircle2 className="h-5 w-5 text-primary" /> : <XCircle className="h-5 w-5 text-red-600" />}{passed ? "You reached the passing mark." : "Review pattern strategies and try again."}</div><Button asChild className="sm:col-span-3"><Link href="/initial/mcqs/non-verbal">Retake test</Link></Button></CardContent></Card></main>;
+}
+function Metric({ label, value }: { label: string; value: string }) { return <div className="rounded-xl border p-4"><p className="text-sm text-slate-500">{label}</p><p className="mt-1 text-2xl font-black">{value}</p></div>; }

@@ -1,0 +1,3 @@
+import { createAdminClient } from "@/lib/supabase/admin";
+export const dynamic="force-dynamic";
+export default async function Unsubscribe({params}:{params:Promise<{token:string}>}){const {token}=await params;const {error}=await createAdminClient().from("blog_subscribers").update({status:"unsubscribed"}).eq("unsubscribe_token",token);return <main className="mx-auto max-w-xl px-5 py-24 text-center"><h1 className="text-3xl font-black">{error?"We could not update your subscription":"You’re unsubscribed"}</h1><p className="mt-4 leading-7 text-slate-600">{error?"Please contact support and we’ll resolve it.":"You will not receive future preparation emails. You can subscribe again from the blog at any time."}</p></main>}

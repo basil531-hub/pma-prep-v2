@@ -1,0 +1,6 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { PsychologyProjector } from "@/components/psychology-projector";
+import { starterSctItems, starterUrduSctItems } from "@/lib/psychology-starter-content";
+export const dynamic = "force-dynamic";
+export default async function SctPage() { const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) redirect("/login"); const { data } = await supabase.from("sct").select("id,sentence,language,display_seconds").eq("is_active", true).order("language").order("sort_order").limit(500); const english = (data || []).filter(x => x.language === "en").sort(() => Math.random() - 0.5).slice(0, 20); const urdu = (data || []).filter(x => x.language === "ur").sort(() => Math.random() - 0.5).slice(0, 20); const selected = [...english, ...urdu]; const seconds = selected[0]?.display_seconds || 18; const items = selected.length ? selected.map(x => ({ id: x.id, text: x.sentence, language: x.language as "en" | "ur" })) : [...starterSctItems, ...starterUrduSctItems]; return <PsychologyProjector testType="SCT" title="Sentence Completion Test" secondsPerItem={seconds} items={items} />; }
