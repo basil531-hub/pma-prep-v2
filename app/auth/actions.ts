@@ -46,12 +46,18 @@ export async function oauthLogin(formData: FormData) {
   const origin = (await headers()).get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const requested = String(formData.get("next") || "");
   const next = requested.startsWith("/") && !requested.startsWith("//") ? requested : "/dashboard";
+  const providerValue = String(formData.get("provider") || "google").toLowerCase();
+  const allowedProviders = new Set(["google", "github", "facebook"]);
+  const provider = allowedProviders.has(providerValue) ? providerValue : "google";
   const referralCode = String(formData.get("referral_code") || "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 12).toUpperCase();
   const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}${referralCode ? `&ref=${encodeURIComponent(referralCode)}` : ""}` },
+    provider: provider as "google" | "github" | "facebook",
+    options: {
+      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}${referralCode ? `&ref=${encodeURIComponent(referralCode)}` : ""}`,
+      ...(provider === "google" ? { queryParams: { access_type: "offline", prompt: "consent" } } : {}),
+    },
   });
-  if (error || !data.url) redirect(`/login?error=${encodeURIComponent(error?.message || "Unable to start Google sign-in.")}`);
+  if (error || !data.url) redirect(`/login?error=${encodeURIComponent(error?.message || `Unable to start ${provider} sign-in.`)}`);
   redirect(data.url);
 }
 export async function signup(formData: FormData) {
