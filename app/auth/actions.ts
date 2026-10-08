@@ -43,7 +43,13 @@ export async function login(formData: FormData) {
 
 export async function oauthLogin(formData: FormData) {
   const supabase = await createClient();
-  const origin = (await headers()).get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const requestOrigin = (await headers()).get("origin");
+  const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL;
+  // On production, always send OAuth providers back to the configured public
+  // origin. This prevents proxy/request headers from falling back to localhost.
+  const origin = process.env.NODE_ENV === "production"
+    ? configuredOrigin || requestOrigin || "https://pma-prep-v2.vercel.app"
+    : requestOrigin || configuredOrigin || "http://localhost:3000";
   const requested = String(formData.get("next") || "");
   const next = requested.startsWith("/") && !requested.startsWith("//") ? requested : "/dashboard";
   const providerValue = String(formData.get("provider") || "google").toLowerCase();
